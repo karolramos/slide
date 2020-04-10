@@ -53,9 +53,41 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
   }
 
+  // Slides config
+  // total da tela - total do elemento(li-imagem), vai sobrar as margens do elemento
+  // dividimos por 2 e no final vai ficar uma margem pra cada lado com a img centralizada
+  slidePosition(slide) {
+    const margin = (this.wrapper.offsetWidth - slide.offsetWidth) /2;
+    return -(slide.offsetLeft - margin); //valor neg
+  }
+
+  slidesConfig() {
+    this.slideArray = [...this.slide.children].map((element) => {
+      const position = this.slidePosition(element);
+      return { position, element }
+    });
+  }
+
+  slidesIndexNav(index) {
+    const last = this.slideArray.length -1;
+    this.index = {
+      prev: index ? index -1 : undefined, // n tem nada antes do zero
+      active: index,
+      next: index === last ? undefined : index + 1,  // n tem nada depois do 5
+    }
+  }
+
+  changeSlide(index) {
+    const activeSlide = this.slideArray[index];
+    this.moveSlide(activeSlide.position);
+    this.slidesIndexNav(index);
+    this.distancia.finalPosition = activeSlide.position;
+  }
+
   init() {
     this.binEvents();
     this.addSlideEvents();
+    this.slidesConfig();
     return this;
   }
 }

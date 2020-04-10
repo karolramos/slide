@@ -5,6 +5,10 @@ export default class Slide {
     this.distancia = { finalPosition: 0, startX: 0,movement: 0 }
   }
 
+  transition(active) {
+    this.slide.style.transition = active ? 'transform .3s' : '';
+  }
+
   moveSlide(distanciaX) {
     this.distancia.movePosition = distanciaX;
     this.slide.style.transform = `translate3d(${distanciaX}px, 0, 0)`;
@@ -26,6 +30,7 @@ export default class Slide {
       movetype = 'touchmove';
     }
     this.wrapper.addEventListener(movetype, this.onMove);
+    this.transition(false);
   }
 
   onMove(event) {
@@ -38,6 +43,18 @@ export default class Slide {
     const movetype = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
     this.wrapper.removeEventListener(movetype, this.onMove);
     this.distancia.finalPosition = this.distancia.movePosition;
+    this.transition(true);
+    this.changeSlideOnEnd(); // muda o slide quando acabar
+  }
+
+  changeSlideOnEnd() {
+    if (this.distancia.movement > 120 && this.index.next !== undefined){
+      this.activeNextSlide();
+    } else if (this.distancia.movement < -120 && this.index.prev !== undefined) {
+      this.activePrevSlide();
+    } else {
+      this.changeSlide(this.index.active);
+    }
   }
 
   addSlideEvents() {
@@ -84,7 +101,22 @@ export default class Slide {
     this.distancia.finalPosition = activeSlide.position;
   }
 
+  // navegação - ativando o slide anterior
+  activePrevSlide() {
+    if (this.index.prev !== undefined) { // se o index anterior for dif de -1(q n existe), aí ativa o anterior.
+      this.changeSlide(this.index.prev);
+    }
+  }
+
+  // navegação - ativando o próximo slide
+  activeNextSlide() {
+    if (this.index.next !== undefined) {
+      this.changeSlide(this.index.next);
+    }
+  }
+
   init() {
+    this.transition(true);
     this.binEvents();
     this.addSlideEvents();
     this.slidesConfig();

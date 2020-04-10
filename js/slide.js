@@ -7,7 +7,6 @@ export class Slide {
     this.distancia = { finalPosition: 0, startX: 0,movement: 0 };
     this.activeClass = 'active';
     this.changeEvent = new Event('changeEvent');
-    this.wrapper.dispatchEvent(this.changeEvent);
   }
 
   transition(active) {
@@ -99,6 +98,7 @@ export class Slide {
     this.slidesIndexNav(index);
     this.distancia.finalPosition = activeSlide.position;
     this.changeActiveClass();
+    this.wrapper.dispatchEvent(this.changeEvent);
   }
 
   changeActiveClass() {
@@ -127,7 +127,7 @@ export class Slide {
   onResize() {
     setTimeout(() => {
       this.slidesConfig();
-    this.changeSlide(this.index.active);
+      this.changeSlide(this.index.active);
     },1000);
   }
 
@@ -154,7 +154,7 @@ export class Slide {
 }
 
 
-export class SlideNav extends Slide {
+export default class SlideNav extends Slide {
   constructor(slide, wrapper) {
     super(slide, wrapper);
     this.bindControlEvents();
@@ -176,7 +176,7 @@ export class SlideNav extends Slide {
     control.dataset.control = 'slide'; // Atributo
 
     this.slideArray.forEach((item, index) => {
-      control.innerHTML += `<li><a href="#slide${index +1}">${index +1}</a></li>`;
+      control.innerHTML += `<li><a href="#slide${index + 1}">${index + 1}</a></li>`;
     });
     this.wrapper.appendChild(control);
     return control;
@@ -191,7 +191,7 @@ export class SlideNav extends Slide {
   }
 
   activeControlItem() {
-    this.controlArray.forEach((item) => item.classList.remove(this.activeClass));
+    this.controlArray.forEach(item => item.classList.remove(this.activeClass));
     this.controlArray[this.index.active].classList.add(this.activeClass);
   }
 

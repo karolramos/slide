@@ -1,8 +1,11 @@
+import debounce from './debounce.js';
+
 export default class Slide {
-  constructor(slide, wrapper){
+  constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
-    this.distancia = { finalPosition: 0, startX: 0,movement: 0 }
+    this.distancia = { finalPosition: 0, startX: 0,movement: 0 };
+    this.activeClass = 'active';
   }
 
   transition(active) {
@@ -48,7 +51,7 @@ export default class Slide {
   }
 
   changeSlideOnEnd() {
-    if (this.distancia.movement > 120 && this.index.next !== undefined){
+    if (this.distancia.movement > 120 && this.index.next !== undefined) {
       this.activeNextSlide();
     } else if (this.distancia.movement < -120 && this.index.prev !== undefined) {
       this.activePrevSlide();
@@ -64,12 +67,6 @@ export default class Slide {
     this.wrapper.addEventListener('touchend', this.onEnd);
   }
 
-  binEvents() {
-    this.onStart = this.onStart.bind(this);
-    this.onMove = this.onMove.bind(this);
-    this.onEnd = this.onEnd.bind(this);
-  }
-
   // Slides config
   // total da tela - total do elemento(li-imagem), vai sobrar as margens do elemento
   // dividimos por 2 e no final vai ficar uma margem pra cada lado com a img centralizada
@@ -81,7 +78,7 @@ export default class Slide {
   slidesConfig() {
     this.slideArray = [...this.slide.children].map((element) => {
       const position = this.slidePosition(element);
-      return { position, element }
+      return { position, element };
     });
   }
 
@@ -91,7 +88,7 @@ export default class Slide {
       prev: index ? index -1 : undefined, // n tem nada antes do zero
       active: index,
       next: index === last ? undefined : index + 1,  // n tem nada depois do 5
-    }
+    };
   }
 
   changeSlide(index) {
@@ -99,6 +96,12 @@ export default class Slide {
     this.moveSlide(activeSlide.position);
     this.slidesIndexNav(index);
     this.distancia.finalPosition = activeSlide.position;
+    this.changeActiveClass();
+  }
+
+  changeActiveClass() {
+    this.slideArray.forEach(item => item.element.classList.remove(this.activeClass));
+    this.slideArray[this.index.active].element.classList.add(this.activeClass);
   }
 
   // navegação - ativando o slide anterior
@@ -115,11 +118,31 @@ export default class Slide {
     }
   }
 
+  addResizeEvent() {
+    window.addEventListener('resize', this.onResize);
+  }
+
+  onResize() {
+    setTimeout(() => {
+      this.slidesConfig();
+    this.changeSlide(this.index.active);
+    },1000);
+  }
+
+  binEvents() {
+    this.onStart = this.onStart.bind(this);
+    this.onMove = this.onMove.bind(this);
+    this.onEnd = this.onEnd.bind(this);
+    this.onResize = debounce(this.onResize.bind(this), 200);
+  }
+
   init() {
-    this.transition(true);
     this.binEvents();
+    this.transition(true);
     this.addSlideEvents();
     this.slidesConfig();
+    this.addResizeEvent();
+    this.changeSlide(0);
     return this;
   }
 }
